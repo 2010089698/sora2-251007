@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sora 2 Quickstart</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/modern-normalize/2.0.0/modern-normalize.min.css" integrity="sha512-6e7V0wOYAV/QXpVZl8vGeOawx2UY8ailqXFz3vGN9VOGBev5nYeD1yfknhk+aoCA8DmF5asJ5AZt0fjOEtp7NQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      body {
+        margin: 0 auto;
+        padding: 2rem;
+        max-width: 960px;
+      }
+
+      h1 {
+        margin-bottom: 1.5rem;
+      }
+
+      form {
+        display: grid;
+        gap: 1rem;
+        background: color-mix(in srgb, var(--form-bg, #ffffff) 90%, transparent);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      }
+
+      textarea {
+        min-height: 120px;
+        resize: vertical;
+        padding: 0.75rem;
+        border-radius: 8px;
+      }
+
+      fieldset {
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 1rem;
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .group {
+        display: grid;
+        gap: 0.5rem;
+      }
+
+      label {
+        font-weight: 600;
+      }
+
+      input[type="number"],
+      select,
+      textarea {
+        font: inherit;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+      }
+
+      button {
+        font: inherit;
+        padding: 0.75rem 1.5rem;
+        border-radius: 999px;
+        border: none;
+        cursor: pointer;
+        color: white;
+        background: linear-gradient(135deg, #10a37f, #1f80ff);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      button:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .status-panel {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: rgba(16, 163, 127, 0.1);
+        display: grid;
+        gap: 1rem;
+      }
+
+      .status-panel h2 {
+        margin: 0;
+      }
+
+      .status-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 0.5rem;
+      }
+
+      video {
+        width: 100%;
+        max-height: 480px;
+        border-radius: 12px;
+        background: black;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Sora 2 Quickstart</h1>
+    <p>
+      Use this quickstart to submit a prompt to the Sora 2 video generation API, track the
+      resulting job, and watch the video once it is complete.
+    </p>
+    <form id="prompt-form">
+      <div class="group">
+        <label for="prompt">Prompt</label>
+        <textarea id="prompt" name="prompt" placeholder="Describe the video you want Sora to create"></textarea>
+      </div>
+
+      <fieldset>
+        <legend>Video Options</legend>
+        <div>
+          <label><input type="radio" name="sizeMode" value="ratio" checked /> Use aspect ratio</label>
+          <label><input type="radio" name="sizeMode" value="resolution" /> Use custom width/height</label>
+        </div>
+
+        <div class="group" id="ratio-options">
+          <label for="duration">Duration (seconds)</label>
+          <select id="duration" name="duration">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+          </select>
+
+          <label for="aspectRatio">Aspect ratio</label>
+          <select id="aspectRatio" name="aspectRatio">
+            <option value="16:9" selected>16:9 (landscape)</option>
+            <option value="9:16">9:16 (portrait)</option>
+            <option value="1:1">1:1 (square)</option>
+            <option value="4:5">4:5</option>
+          </select>
+        </div>
+
+        <div class="group hidden" id="resolution-options">
+          <label for="width">Width (px)</label>
+          <input type="number" id="width" name="width" min="256" max="1920" step="16" placeholder="e.g. 1280" />
+          <label for="height">Height (px)</label>
+          <input type="number" id="height" name="height" min="256" max="1920" step="16" placeholder="e.g. 720" />
+        </div>
+      </fieldset>
+
+      <button type="submit" id="submit">Generate Video</button>
+    </form>
+
+    <section class="status-panel hidden" id="status-panel">
+      <div>
+        <h2>Status</h2>
+        <p id="job-id"></p>
+      </div>
+      <ul class="status-list" id="status-list"></ul>
+      <div id="video-container" class="hidden">
+        <h3>Generated Video</h3>
+        <video id="result-video" controls></video>
+      </div>
+      <div>
+        <button type="button" id="cancel" class="secondary">Cancel Job</button>
+      </div>
+    </section>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
