@@ -13,6 +13,8 @@ const videoEl = document.getElementById("result-video");
 const cancelButton = document.getElementById("cancel");
 const ratioOptions = document.getElementById("ratio-options");
 const resolutionOptions = document.getElementById("resolution-options");
+const loadJobForm = document.getElementById("load-job-form");
+const loadJobInput = document.getElementById("job-id-input");
 
 let currentJobId = null;
 let pollTimer = null;
@@ -58,6 +60,10 @@ function stopPolling() {
   }
 }
 
+function updateCancelButton() {
+  cancelButton.disabled = !currentJobId;
+}
+
 async function pollJob(jobId) {
   try {
     const response = await fetch(`/api/jobs/${jobId}`);
@@ -92,18 +98,21 @@ function handleJobUpdate(job) {
     videoContainer.classList.remove("hidden");
     stopPolling();
     currentJobId = null;
+    updateCancelButton();
   }
 
   if (status === "failed" && job.error) {
     appendStatus(`Error: ${job.error}`);
     stopPolling();
     currentJobId = null;
+    updateCancelButton();
   }
 
   if (status === "canceled") {
     appendStatus("Job canceled");
     stopPolling();
     currentJobId = null;
+    updateCancelButton();
   }
 }
 
@@ -120,6 +129,7 @@ async function submitPrompt(event) {
   showStatusPanel();
   stopPolling();
   currentJobId = null;
+  updateCancelButton();
   resetStatus();
   appendStatus("Submitting generation request...");
 
@@ -166,10 +176,12 @@ async function submitPrompt(event) {
     if (!currentJobId) {
       appendStatus("Unexpected response from server.");
       setLoading(false);
+      updateCancelButton();
       return;
     }
 
     appendStatus("Generation job created. Polling for status...");
+    updateCancelButton();
     pollJob(currentJobId);
   } catch (error) {
     appendStatus(`Error submitting prompt: ${error.message}`);
@@ -201,9 +213,65 @@ async function cancelJob() {
   }
 }
 
+async function loadJob(event) {
+  event.preventDefault();
+  const jobId = loadJobInput.value.trim();
+
+  showStatusPanel();
+  stopPolling();
+  currentJobId = null;
+  updateCancelButton();
+  resetStatus();
+
+  if (!jobId) {
+    appendStatus("Please provide a job ID to load.");
+    return;
+  }
+
+  appendStatus(`Loading job ${jobId}...`);
+
+  try {
+    const response = await fetch(`/api/jobs/${jobId}`);
+
+    if (response.status === 404) {
+      appendStatus("Job not found.");
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch job (status ${response.status})`);
+    }
+
+    const job = await response.json();
+    const status = normalizeStatus(job.status);
+
+    if (status === "queued" || status === "processing") {
+      currentJobId = job.id;
+      updateCancelButton();
+    }
+
+    handleJobUpdate(job);
+
+    if (status === "queued" || status === "processing") {
+      pollJob(job.id);
+    } else {
+      currentJobId = null;
+      updateCancelButton();
+    }
+  } catch (error) {
+    appendStatus(`Error loading job: ${error.message}`);
+    currentJobId = null;
+    updateCancelButton();
+  }
+}
+
 form.addEventListener("submit", submitPrompt);
 
 cancelButton.addEventListener("click", cancelJob);
+
+if (loadJobForm) {
+  loadJobForm.addEventListener("submit", loadJob);
+}
 
 for (const option of document.querySelectorAll('input[name="sizeMode"]')) {
   option.addEventListener("change", (event) => {
@@ -217,3 +285,5 @@ for (const option of document.querySelectorAll('input[name="sizeMode"]')) {
     }
   });
 }
+
+updateCancelButton();
