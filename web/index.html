@@ -56,10 +56,13 @@
       }
 
       input[type="number"],
+      input[type="text"],
       select,
       textarea {
         font: inherit;
         border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        padding: 0.75rem;
       }
 
       button {
@@ -170,6 +173,11 @@
         <h2>Status</h2>
         <p id="job-id"></p>
       </div>
+      <form id="load-job-form" class="group">
+        <label for="job-id-input">Load existing job</label>
+        <input type="text" id="job-id-input" placeholder="Enter a job ID" />
+        <button type="submit" id="load-job">Load Video</button>
+      </form>
       <ul class="status-list" id="status-list"></ul>
       <div id="video-container" class="hidden">
         <h3>Generated Video</h3>
